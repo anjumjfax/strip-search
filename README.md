@@ -1,2 +1,2 @@
 # strip-search
-App server to peanuts-search.co
+App server to peanuts-search.com
