@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport"
+		content="width=device-width, initial-scale=1.0"/>
+		<meta name="description"
+		content="A search tool for the Peanuts comic strip"/>
+		<meta name="keywords"
+		      content="peanuts search engine,search, comics"/>
+		<meta name="google-site-verification"
+		      content="497dS7PuMOAE4zxPA0G77lkr-3wvR6HOR7yeInys-4o" />
+		<title>Peanuts strip search (beta)</title>
+	</head>
+	<body id="h" class="big"> 
+		<header>
+		<h1>Peanuts Search!</h1>
+		<input type="text"
+		       name="q"
+		       id="query"
+		       placeholder="Search (e.g. blanket)"
+		       value="{{.}}"
+		       autofocus
+		       />
+		<select id="order">
+			<option value=0>Most relevant first</option>
+			<option value=1>Earliest first</option>
+			<option value=2>Latest first</option>
+		</select>
+		<br/>
+		</header>
+		<div id="results">
+		</div>
+	</body>
+	<style>
+		body {
+			margin: auto;
+			text-align: center;
+			font-family: sans-serif;
+		}
+
+		@keyframes shrink {
+			from { padding-top: 100% }
+			to { padding-top: 10px }
+		}
+
+		header {
+			animation: shrink 1 0.3s;
+			background: url("/a/bg.png");
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+
+		.big header {
+			animation: none;
+			background: none;
+			padding-top: 20%;
+		}
+
+		body.big {
+			background-image: url("/a/bg.png") !important;
+			background-size: 100%;
+			background-attachment: fixed;
+			background-position: bottom;
+			background-repeat: no-repeat;
+			background-color: #7c8e81;
+		}
+
+		input {
+			padding: 5px;	
+			border: none;
+			background-color: #f1f1f1;
+		}
+
+		.big input {
+			font-size: 3em;
+			max-width: 90%;
+		}
+
+		@media (max-width: 450px) {
+			.big input {
+				width: 90%;
+				font-size: initial;
+			}
+		}
+		
+		select {
+			padding: 4px;
+			border-style: none;
+		}
+
+		.big select {
+			display: none;
+		}
+
+		h1 {
+			display: none;
+		}
+
+		.big h1 {
+			display: block;
+		}
+
+		img {
+			display: inline-block;
+			padding: 10px;
+			max-width: 95%
+		}
+
+		section img {
+			width: initial;
+			max-width: 95%;
+			max-height: 100%;
+		}
+
+		section {
+			width: 100%;
+			background: #222;
+		}
+
+		aside {
+			text-transform: uppercase;
+		}
+
+		a {
+			padding-top: 10px;
+			display: block;
+			text-decoration: none;
+			color: #fff;
+		}
+
+		a::after {
+			content: " →";
+		}
+	</style>
+	<script>
+var Loaded = 0;
+var Results;
+var ResultsPage = document.getElementById("results");
+var textInput = document.getElementById("query");
+var combo = document.getElementById("order");
+var Months = {};
+Months["01"] = "January"
+Months["02"] = "February"
+Months["03"] = "March"
+Months["04"] = "April"
+Months["05"] = "May"
+Months["06"] = "June"
+Months["07"] = "July"
+Months["08"] = "August"
+Months["09"] = "September"
+Months["10"] = "October"
+Months["11"] = "November"
+Months["12"] = "December"
+
+function start(r){
+	if (r.responseText == '') return;
+	try {
+		Results = JSON.parse(r.responseText);
+	} catch(_) {
+		return;
+	};
+	refresh();
+	if (Results.strips.length == 0) {
+		warn();
+	} else {
+		document.getElementById("h").removeAttribute("class");
+		sort();
+		load();
+	}
+}
+
+function query(searchTerm) {
+	var r = new XMLHttpRequest();
+	r.open('post', '/q', true);
+	r.send(searchTerm);
+	r.onreadystatechange = function(){start(r)};
+}
+
+function warn() {
+	var pElement = document.createElement("p");
+	pElement.textContent = "No strips found.";
+	ResultsPage.appendChild(pElement);
+	Loaded = 0;
+}
+
+function desc(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); }
+
+function asc(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); }
+
+function rel(a, b){ return a.rel > b.rel ? -1 : (a.rel < b.rel ? 1 : 0); }
+
+function sort() {
+	switch(combo.value) {
+		case '2':
+			Results.strips.sort(desc);
+			break;
+		case '1':
+			Results.strips.sort(asc);
+			break;
+		case '0':
+			Results.strips.sort(rel);
+			break;
+	}
+}
+
+function img(name){
+	var img = document.createElement("img")
+	img.id = name;
+	img.src = "/i/"+name.replace(/-/g, "");
+	img.onclick = expand;
+	return img;
+}
+
+function load() {
+	if (Results == null) {
+		return;
+	}
+	var max = Results.strips.length;
+	for (var i = Loaded; i < Loaded+16 && i < max ; i++) {
+		if (ResultsPage.children.length > 150){
+			ResultsPage.removeChild(ResultsPage.firstElementChild);
+		}
+		var pic = img(Results.strips[i].date);
+		ResultsPage.appendChild(pic);
+	}
+	Loaded = i;
+}
+
+function refresh() {
+	while (ResultsPage.hasChildNodes()){
+		ResultsPage.removeChild(ResultsPage.lastChild);
+	}
+	Loaded = 0;
+}
+
+function highlight(text){
+	var aside = document.createElement('aside');
+	var terms = textInput.value.split(' ');
+	for (var i = 0; i < terms.length; i++){
+		var mark = function(x){return '<mark>'+x+'</mark>'};
+		text = text.replace(new RegExp(terms[i], 'g'), mark);
+	}
+	aside.innerHTML = text;
+	return aside;
+}
+
+function shrink(e){
+	var id = e.target.id;
+	id = id.replace('x-', '');
+	ResultsPage.insertBefore(img(id), e.target.parentNode);
+	e.target.parentNode.remove();
+}
+
+function translate(d) {
+	var portions = d.split("-");
+	var month = portions[1];
+	return Months[month]+" "+portions[2]+", "+portions[0];
+}
+
+function open(e){
+	//if (r.readyState == 4 && r.status == 200){
+		var section = document.createElement('section');
+		var img = document.createElement('img');
+		//var aside = highlight(r.responseText);
+		var a = document.createElement('a');
+		a.textContent = translate(e.target.id);
+		a.href = 'https://www.gocomics.com/peanuts/'+
+			e.target.id.replace(/-/g, '/');
+		img.id = 'x-'+e.target.id;
+		img.onclick = shrink;
+		img.src = "/I/"+e.target.id.replace(/-/g, "");
+		section.appendChild(a);
+		//section.appendChild(aside);
+		section.appendChild(img);
+		var i = document.getElementById(e.target.id);
+		if (i != null) i.parentNode.replaceChild(section, i);
+		section.scrollIntoView();
+	//}
+}
+
+function expand(e){
+	//var r = new XMLHttpRequest();
+	//r.open('get', '/t/'+e.target.id, true);
+	//r.send();
+	//r.onreadystatechange = function(){open(r, e)};
+	open(e);
+}
+
+function titilize(t){
+	if (t === "") {
+		window.history.pushState('obj', 'newtitle', '/');
+	} else {
+		window.history.pushState('obj', 'newtitle', '?q='+t);
+	}
+
+}
+
+document.addEventListener('scroll', function(e)
+{
+	if((window.innerHeight + window.pageYOffset)
+	>= document.body.offsetHeight){load();}
+});
+
+var timeout = null;
+
+textInput.onkeyup = function(e) {
+	clearTimeout(timeout);
+	timeout = setTimeout(function(){
+		titilize(textInput.value);
+		query(textInput.value);
+	}, 500);
+}
+
+window.onload = function(e) {
+	window.href = "test";
+	if(!(textInput.value === "")){
+		query(textInput.value);
+	}
+}
+
+combo.onchange = function(e) {
+	refresh();
+	sort();
+	load();
+}
+	</script>
+</html>
