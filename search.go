@@ -191,6 +191,7 @@ func postSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("getting index")
 	t, _ := template.ParseFiles("index.html")
 	q := r.URL.Query()
 	w.Header().Set("Content-Type", "text/html")
@@ -285,7 +286,7 @@ func main() {
 	} else {
 		fmt.Println("Warning: Not being served over HTTPS")
 		server := &http.Server {
-			Addr: ":8080",
+			Addr: ":80",
 			Handler: mux,
 		}
 		server.ListenAndServe()
