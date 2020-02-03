@@ -1,6 +1,6 @@
 /*
 Peanuts Search, search engine
-Copyright (C) 2017, 2018, 2019 Anjum Ahmed
+Copyright (C) 2017, 2018, 2019, 2020 Anjum Ahmed
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -31,10 +31,13 @@ import (
 	"strconv"
 	"time"
 	"os"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var db = strips{}
 var idx = idxs{}
+var dba *sql.DB
 
 type idxs struct {
 	Index []struct {
@@ -128,22 +131,15 @@ func search(query string) results {
 		return results
 	}
 
-	query = strings.Trim(query, " ")
-	query = strings.ToLower(query)
-	terms := strings.Split(query, " ")
-	count := 0.0
+	rows, _ := dba.Query("select date, rank from txscripts where body match ?", query)
 
-	cutup(terms)
-	for _, v := range db.Strip {
-		count = rank(terms, v.Lines)
-		if count > 0 {
-			results.Strips = Ex(results.Strips,
-				strip{v.Date, count})
-		}
-	}
+	for rows.Next() {
+		var date string
+		var rank float64
+		_ = rows.Scan(&date, &rank)
 
-	if len(results.Strips) == 0 {
-		results.Error = "No strips found."
+		results.Strips = Ex(results.Strips, strip{date, rank})
+		//fmt.Println(date, rank)
 	}
 
 	return results
@@ -237,37 +233,36 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 	w.Write(fp)
 }
 
-func setupJson(){
-	fp, err := ioutil.ReadFile("transcript.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = json.Unmarshal([]byte(fp), &db)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func main() {
-	setupJson()
+func secure() bool{
 	_, certErr := os.Stat("certs")
-
 	secure := true
 	if certErr != nil {
 		secure = false
 	}
+	return secure
+}
 
+func routes() *http.ServeMux {
 	mux := http.NewServeMux()
-
 	mux.HandleFunc("/q", postSearchQuery)
 	mux.HandleFunc("/html", postSearchQueryHTML)
 	mux.HandleFunc("/i/", getImage)
 	mux.HandleFunc("/I/", getImageBig)
 	mux.HandleFunc("/a/", getAsset)
 	mux.HandleFunc("/", getIndex)
+	return mux
+}
 
-	if secure {
+func main() {
+	dba, _ = sql.Open("sqlite3", "txscripts.db")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	defer dba.Close()
+
+	mux := routes()
+
+	if secure() {
 		certManager := autocert.Manager{
 			Prompt: autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(
@@ -286,9 +281,9 @@ func main() {
 	} else {
 		fmt.Println("Warning: Not being served over HTTPS")
 		server := &http.Server {
-			Addr: ":80",
+			Addr: ":8080",
 			Handler: mux,
 		}
-		server.ListenAndServe()
+		log.Fatal(server.ListenAndServe())
 	}
 }
