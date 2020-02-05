@@ -19,33 +19,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/acme/autocert"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"crypto/tls"
-	"golang.org/x/crypto/acme/autocert"
-	"strings"
+	"os"
 	"strconv"
 	"time"
-	"os"
-	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 )
 
-var db = strips{}
-var idx = idxs{}
 var dba *sql.DB
-
-type idxs struct {
-	Index []struct {
-		Key string `"key":"key"`
-		Dates []strip `"dates":"dates"`
-	}
-}
-
 
 type strips struct {
 	Strip []struct {
@@ -78,51 +67,6 @@ func Ex(slice []strip, element strip) []strip {
 	return slice
 }
 
-func rank(terms []string, s string) (score float64) {
-	//words := strings.Split(s, " ")
-	count := 0.0
-	for i, term := range terms {
-		if i > 0 {
-			count = float64(strings.Count(s, term)) * count
-		} else  {
-			count = float64(strings.Count(s, term))
-		}
-			//if count > 0 {
-			//		count = count + 100
-			//}
-		//for i := 0; i < len(words); i++ {
-		//	if (strings.Contains(words[i], term)) {
-		//		count = count + 1
-		//	}
-		//}
-	}
-	return count
-}
-
-func seek(date string) (index int) {
-	for i, strip := range db.Strip {
-		if strip.Date == date {
-			return i
-		}
-	}
-	return -1
-}
-
-func cutup(terms []string) {
-	var from string
-	var to string
-	for _, v := range terms {
-		if strings.Contains(v, "from:") {
-			from = strings.Split(v, ":")[1]
-			fmt.Println(seek(from))
-		}
-		if strings.Contains(v, "to:") {
-			to = strings.Split(v, ":")[1]
-			fmt.Println(seek(to))
-		}
-	}
-}
-
 func search(query string) results {
 	results := results{"", make([]strip, 0, 256)}
 
@@ -143,15 +87,6 @@ func search(query string) results {
 	}
 
 	return results
-}
-
-func termInIndex(t string) *[]strip {
-	for _, v := range idx.Index {
-		if strings.Contains(v.Key, t) {
-			return &v.Dates
-		}
-	}
-	return nil
 }
 
 func postSearchQuery(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +168,7 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 	w.Write(fp)
 }
 
-func secure() bool{
+func secure() bool {
 	_, certErr := os.Stat("certs")
 	secure := true
 	if certErr != nil {
@@ -255,9 +190,6 @@ func routes() *http.ServeMux {
 
 func main() {
 	dba, _ = sql.Open("sqlite3", "txscripts.db")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 	defer dba.Close()
 
 	mux := routes()
@@ -269,19 +201,19 @@ func main() {
 				"peanuts-search.com"),
 			Cache: autocert.DirCache("certs"),
 		}
-		server := &http.Server {
-			Addr: ":https",
+		server := &http.Server{
+			Addr:    ":https",
 			Handler: mux,
 			TLSConfig: &tls.Config{
 				GetCertificate: certManager.GetCertificate,
 			},
 		}
 		go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
-		log.Fatal(server.ListenAndServeTLS("",""))
+		log.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
 		fmt.Println("Warning: Not being served over HTTPS")
-		server := &http.Server {
-			Addr: ":8080",
+		server := &http.Server{
+			Addr:    ":8080",
 			Handler: mux,
 		}
 		log.Fatal(server.ListenAndServe())
