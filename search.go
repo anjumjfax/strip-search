@@ -36,35 +36,14 @@ import (
 
 var dba *sql.DB
 
-type strips struct {
-	Strip []struct {
-		Date  string `"strip":"date"`
-		Tags  string `"tags": "tags"`
-		Lines string `"strip":"lines"`
-	}
-}
-
 type strip struct {
 	Date string  `json:"date"`
 	Rel  float64 `json:"rel"`
-	//Num int `json:"num"`
 }
 
 type results struct {
 	Error  string  `json:"errors"`
 	Strips []strip `json:"strips"`
-}
-
-func Ex(slice []strip, element strip) []strip {
-	n := len(slice)
-	if n == cap(slice) {
-		newSlice := make([]strip, len(slice), 2*len(slice)+1)
-		copy(newSlice, slice)
-		slice = newSlice
-	}
-	slice = slice[0 : n+1]
-	slice[n] = element
-	return slice
 }
 
 func search(query string) results {
@@ -82,8 +61,7 @@ func search(query string) results {
 		var rank float64
 		_ = rows.Scan(&date, &rank)
 
-		results.Strips = Ex(results.Strips, strip{date, rank})
-		//fmt.Println(date, rank)
+		results.Strips = append(results.Strips, strip{date, rank})
 	}
 
 	return results
