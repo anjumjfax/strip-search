@@ -14,43 +14,30 @@
 	</head>
 	<body id="h" class="big"> 
 		<header>
-		<input type="text"
-		       name="q"
-		       id="query"
-		       placeholder="Search (e.g. blanket)"
-		       value="{{.}}"
-			   class="interactive"
-		       autofocus
-		       />
-		<select id="order" class="interactive">
-			<option value=0>Most relevant first</option>
-			<option value=1>Earliest first</option>
-			<option value=2>Latest first</option>
-		</select>
-		<noscript>
 		<form action="/html" method="get">
 		<input type="text"
 		       name="q"
 		       id="query"
 		       placeholder="Search (e.g. blanket)"
-			   value="{{.}}"
 		       autofocus
 		       />
 		<input type="submit"/>
 		</form>
-		</noscript>
 		<br/>
 		</header>
 		<div id="results">
+			{{range .Strips}}
+			<a href="/I/{{.Date}}"><img src=/i/{{.Date}}></a>
+			{{end}}
 		</div>
+		<p>
+			{{range .Pages}}
+			<a href="/html?q={{.Q}}&offset={{.Off}}">[{{.No}}]</a>
+			{{end}}
+		</p>
 	</body>
-	<script src="/a/js.js"></script>
 <style>
 body { margin: auto; text-align: center; font-family: sans-serif; }
 img { display: inline-block; padding: 10px; max-width: 95% }
-a { padding-top: 10px; display: block; text-decoration: none; color:#fff}
-a::after { content: " →"}
-section img { width: initial; max-width: 95%; max-height: 100% }
-section { width: 100%; background: #222}
 </style>
 </html>

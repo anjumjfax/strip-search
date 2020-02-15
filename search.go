@@ -30,8 +30,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
+	"strconv"
+	"strings"
 )
 
 var dba *sql.DB
@@ -46,6 +47,17 @@ type results struct {
 	Strips []strip `json:"strips"`
 }
 
+type htmlResults struct {
+	Strips []strip
+	Pages []page
+}
+
+type page struct {
+	No string
+	Off int
+	Q string
+}
+
 func search(query string) results {
 	results := results{"", make([]strip, 0, 256)}
 
@@ -54,7 +66,7 @@ func search(query string) results {
 		return results
 	}
 
-	rows, _ := dba.Query("select date, rank from txscripts where body match ?", query)
+	rows, _ := dba.Query("select date, rank from txscripts where body match ? order by rank desc", query)
 
 	for rows.Next() {
 		var date string
@@ -82,25 +94,60 @@ func postSearchQuery(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func postSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
-	whole, _ := ioutil.ReadAll(r.Body)
-	b := make([]byte, 0, 0)
-	if len(whole) > 2 {
-		b = whole[2:]
+func pageNos(length int, offset int, q string) []page {
+	pages := make([]page, 0)
+	if offset - 96 >= 0 {
+		pages = append(pages, page {"-96", offset -96, q})
+	}
+	if offset - 48 >= 0 {
+		pages = append(pages, page {"-48", offset -48, q})
+	}
+	if offset - 24 >= 0 {
+		pages = append(pages, page {"-24", offset-24, q})
+	}
+	if offset + 24 < length {
+		pages = append(pages, page {"+24", offset + 24, q})
+	}
+	if offset + 48 < length {
+		pages = append(pages, page {"+48", offset + 48, q})
+	}
+	if offset + 96 < length {
+		pages = append(pages, page {"+96", offset + 96, q})
+	}
+	return pages
+}
+
+func getSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	b := q["q"][0]
+	offset := 0
+	if q["offset"] != nil {
+		offset_conv, err := strconv.Atoi(q["offset"][0])
+		if err == nil {
+			offset = offset_conv
+		}
 	}
 	start := time.Now()
-	searchResults := search(string(b))
+	searchResults := search(b)
 	end := time.Now()
 	fmt.Println(end.Sub(start))
-
-	strips := searchResults.Strips
-	w.Write([]byte("have not done a non javascript version yet!!!\n"))
-	w.Write([]byte("number of results:\n"))
-	w.Write([]byte(strconv.Itoa(len(strips))))
+	no := len(searchResults.Strips)
+	if no < offset {
+		offset = no - 24
+	}
+	upper := offset + 24
+	if no < upper {
+		upper = no
+	}
+	res := htmlResults{ searchResults.Strips[offset:upper], pageNos(no, offset, b) }
+	for n, i := range res.Strips {
+		res.Strips[n].Date = strings.Replace(i.Date, "-", "", 3)
+	}
+	t, _ := template.ParseFiles("results.html")
+	t.Execute(w, res)
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("getting index")
 	t, _ := template.ParseFiles("index.html")
 	q := r.URL.Query()
 	w.Header().Set("Content-Type", "text/html")
@@ -136,13 +183,13 @@ func getImageBig(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
-	fp, err := ioutil.ReadFile("bg.png")
+	fp, err := ioutil.ReadFile("js.js")
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Type", "application/javascript")
 	w.Write(fp)
 }
 
@@ -158,7 +205,7 @@ func secure() bool {
 func routes() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/q", postSearchQuery)
-	mux.HandleFunc("/html", postSearchQueryHTML)
+	mux.HandleFunc("/html", getSearchQueryHTML)
 	mux.HandleFunc("/i/", getImage)
 	mux.HandleFunc("/I/", getImageBig)
 	mux.HandleFunc("/a/", getAsset)
