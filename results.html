@@ -19,11 +19,16 @@
 		       name="q"
 		       id="query"
 		       placeholder="Search (e.g. blanket)"
+			   autocomplete="off"
 		       autofocus
 		       />
+		<select id="order" name="order">
+			<option value="-1" selected>Most relevant first</option>
+			<option value="0">Earliest first</option>
+			<option value="1">Latest first</option>
+		</select>
 		<input type="submit"/>
 		</form>
-		<br/>
 		</header>
 		<div id="results">
 			{{range .Strips}}
@@ -39,5 +44,8 @@
 <style>
 body { margin: auto; text-align: center; font-family: sans-serif; }
 img { display: inline-block; padding: 10px; max-width: 95% }
+header {padding-top: 10px; padding-bottom: 10px; background: #131B2A }
+input {padding: 5px; border: none; font-family: 'Open Sans', sans-serif;}
+select {padding: 4px; border-style: none; font-family: 'Open Sans', sans-serif;}
 </style>
 </html>

@@ -14,43 +14,41 @@
 	</head>
 	<body id="h" class="big"> 
 		<header>
+			<form action="/html" method="get">
 		<input type="text"
-		       name="q"
-		       id="query"
-		       placeholder="Search (e.g. blanket)"
-		       value="{{.}}"
-			   class="interactive"
-		       autofocus
-		       />
-		<select id="order" class="interactive">
-			<option value=0>Most relevant first</option>
-			<option value=1>Earliest first</option>
-			<option value=2>Latest first</option>
+			   name="q"
+			   id="query"
+			   placeholder="Search (e.g. blanket)"
+			   value="{{.}}"
+			   autocomplete="off"
+			   autofocus
+			   />
+		<select id="order" name="order">
+			<option value="0" selected>Most relevant first</option>
+			<option value="-1">Earliest first</option>
+			<option value="1">Latest first</option>
 		</select>
 		<noscript>
-		<form action="/html" method="get">
-		<input type="text"
-		       name="q"
-		       id="query"
-		       placeholder="Search (e.g. blanket)"
-			   value="{{.}}"
-		       autofocus
-		       />
-		<input type="submit"/>
-		</form>
+		<input type="submit" />
 		</noscript>
-		<br/>
+		</form>
 		</header>
 		<div id="results">
+		</div>
+		<div id="jumbotron">
+			<h1>Start typing to search for up to 17,987 Peanuts strips!</h1>
 		</div>
 	</body>
 	<script src="/a/js.js"></script>
 <style>
-body { margin: auto; text-align: center; font-family: sans-serif; }
+body { margin: auto; text-align: center; font-family: 'Open Sans', sans-serif; }
 img { display: inline-block; padding: 10px; max-width: 95% }
 a { padding-top: 10px; display: block; text-decoration: none; color:#fff}
 a::after { content: " →"}
 section img { width: initial; max-width: 95%; max-height: 100% }
 section { width: 100%; background: #222}
+header {padding-top: 10px; padding-bottom: 10px; background: #131B2A }
+input {padding: 5px; border: none; font-family: 'Open Sans', sans-serif;}
+select {padding: 4px; border-style: none; font-family: 'Open Sans', sans-serif;}
 </style>
 </html>

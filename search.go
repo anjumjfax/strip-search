@@ -58,7 +58,7 @@ type page struct {
 	Q string
 }
 
-func search(query string) results {
+func search(query string, order int) results {
 	results := results{"", make([]strip, 0, 256)}
 
 	if len(query) < 2 {
@@ -66,7 +66,17 @@ func search(query string) results {
 		return results
 	}
 
-	rows, _ := dba.Query("select date, rank from txscripts where body match ? order by rank desc", query)
+	var rows *sql.Rows
+
+	if order == 0 {
+	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by rank desc", query)
+	}
+	if order > 0 {
+	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by date desc", query)
+	}
+	if order < 0 {
+	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by date asc", query)
+	}
 
 	for rows.Next() {
 		var date string
@@ -82,7 +92,7 @@ func search(query string) results {
 func postSearchQuery(w http.ResponseWriter, r *http.Request) {
 	b, _ := ioutil.ReadAll(r.Body)
 	start := time.Now()
-	searchResults := search(string(b))
+	searchResults := search(string(b), 0)
 	end := time.Now()
 	fmt.Println(end.Sub(start))
 	jsonResponse, err := json.Marshal(searchResults)
@@ -119,6 +129,12 @@ func pageNos(length int, offset int, q string) []page {
 
 func getSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
+	if q["q"] == nil {
+		tmp := htmlResults{}
+		t, _ := template.ParseFiles("results.html")
+		t.Execute(w, tmp)
+		return
+	}
 	b := q["q"][0]
 	offset := 0
 	if q["offset"] != nil {
@@ -127,11 +143,21 @@ func getSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
 			offset = offset_conv
 		}
 	}
+	order := 0
+	if q["order"] != nil {
+		order_q, err := strconv.Atoi(q["order"][0])
+		if err == nil {
+			order = order_q
+		}
+	}
 	start := time.Now()
-	searchResults := search(b)
+	searchResults := search(b, order)
 	end := time.Now()
 	fmt.Println(end.Sub(start))
 	no := len(searchResults.Strips)
+	if offset < 0 {
+		offset = 0;
+	}
 	if no < offset {
 		offset = no - 24
 	}

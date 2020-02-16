@@ -2,6 +2,7 @@ var Loaded = 0;
 var Results;
 var ResultsPage = document.getElementById("results");
 var textInput = document.getElementById("query");
+var form = document.getElementsByTagName("form");
 var combo = document.getElementById("order");
 var Months = {};
 Months["01"] = "January"
@@ -28,13 +29,23 @@ function start(r){
 	if (Results.strips.length == 0) {
 		warn();
 	} else {
-		document.getElementById("h").removeAttribute("class");
+		var jumbo = document.getElementById("jumbotron");
+		if (jumbo) {
+			jumbo.remove();
+		}
 		sort();
 		load();
 	}
 }
 
 function query(searchTerm) {
+	if (searchTerm === "") {
+		if(Loaded > 0){
+			refresh();
+			warn();
+		}
+		return;
+	}
 	var r = new XMLHttpRequest();
 	r.open('post', '/q', true);
 	r.send(searchTerm);
@@ -56,10 +67,10 @@ function rel(a, b){ return a.rel > b.rel ? -1 : (a.rel < b.rel ? 1 : 0); }
 
 function sort() {
 	switch(combo.value) {
-		case '2':
+		case '1':
 			Results.strips.sort(desc);
 			break;
-		case '1':
+		case '-1':
 			Results.strips.sort(asc);
 			break;
 		case '0':
@@ -109,24 +120,22 @@ function translate(d) {
 }
 
 function open(e){
-	//if (r.readyState == 4 && r.status == 200){
-		var section = document.createElement('section');
-		var img = document.createElement('img');
-		//var aside = highlight(r.responseText);
-		var a = document.createElement('a');
-		a.textContent = translate(e.target.id);
-		a.href = 'https://www.gocomics.com/peanuts/'+
-			e.target.id.replace(/-/g, '/');
-		img.id = 'x-'+e.target.id;
-		img.onclick = shrink;
-		img.src = "/I/"+e.target.id.replace(/-/g, "");
-		section.appendChild(a);
-		//section.appendChild(aside);
-		section.appendChild(img);
-		var i = document.getElementById(e.target.id);
-		if (i != null) i.parentNode.replaceChild(section, i);
-		section.scrollIntoView();
-	//}
+	var section = document.createElement('section');
+	var img = document.createElement('img');
+	//var aside = highlight(r.responseText);
+	var a = document.createElement('a');
+	a.textContent = translate(e.target.id);
+	a.href = 'https://www.gocomics.com/peanuts/'+
+		e.target.id.replace(/-/g, '/');
+	img.id = 'x-'+e.target.id;
+	img.onclick = shrink;
+	img.src = "/I/"+e.target.id.replace(/-/g, "");
+	section.appendChild(a);
+	//section.appendChild(aside);
+	section.appendChild(img);
+	var i = document.getElementById(e.target.id);
+	if (i != null) i.parentNode.replaceChild(section, i);
+	section.scrollIntoView();
 }
 
 function titilize(t){
@@ -140,7 +149,7 @@ function titilize(t){
 
 document.addEventListener('scroll', function(e)
 {
-	if((window.innerHeight + window.pageYOffset)
+	if((window.innerHeight + window.pageYOffset + 10)
 	>= document.body.offsetHeight){load();}
 });
 
@@ -165,4 +174,8 @@ combo.onchange = function(e) {
 	refresh();
 	sort();
 	load();
+}
+
+form[0].onsubmit = function(e) {
+	e.preventDefault();
 }

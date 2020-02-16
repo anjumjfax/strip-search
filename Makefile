@@ -13,7 +13,7 @@ clean:
 	rm search
 
 deploy:
-	scp index.html search.ahmedaj2:/home/search/search
+	scp js.js index.html results.html search.ahmedaj2:/home/search/search
 
 restart:
 	ssh -t root.ahmedaj2 'systemctl stop peanuts-search.service'
