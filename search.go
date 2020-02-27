@@ -69,7 +69,7 @@ func search(query string, order int) results {
 	var rows *sql.Rows
 
 	if order == 0 {
-	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by rank desc", query)
+	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by rank", query)
 	}
 	if order > 0 {
 	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by date desc", query)
