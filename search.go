@@ -209,13 +209,21 @@ func getImageBig(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
-	fp, err := ioutil.ReadFile("js.js")
+	mime := "image/jpeg"
+	filename := r.URL.Path[len("/a/"):]
+	switch filename {
+	case "js.js":
+		mime = "application/javascript"
+	case "favicon.png":
+		mime = "image/png"
+	}
+	fp, err := ioutil.ReadFile(filename)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/javascript")
+	w.Header().Set("Content-Type", mime)
 	w.Write(fp)
 }
 
