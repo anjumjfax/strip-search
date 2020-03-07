@@ -15,6 +15,9 @@ clean:
 deploy:
 	scp js.js index.html results.html search.ahmedaj2:/home/search/search
 
+test:
+	go test --tags "fts5"
+
 restart:
 	ssh -t root.ahmedaj2 'systemctl stop peanuts-search.service'
 	scp search search.ahmedaj2:/home/search/search
