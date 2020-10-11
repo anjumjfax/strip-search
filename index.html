@@ -11,11 +11,12 @@
 		<meta name="google-site-verification"
 		      content="497dS7PuMOAE4zxPA0G77lkr-3wvR6HOR7yeInys-4o" />
 		<link rel="icon" type="image/png" href="/a/favicon.png">
-		<title>Peanuts strip search - Search engine for comic strips of Snoopy, Charlie Brown, and friends</title>
+		<title>Peanuts, Snoopy, Charlie Brown, comic search engine</title>
 	</head>
 	<body id="h" class="big"> 
 		<header>
 			<form action="/html" method="get">
+		<a href="/a/about.html" rel="jslicense" class="about">?</a>
 		<input type="text"
 			   name="q"
 			   id="query"
@@ -42,15 +43,18 @@
 	</body>
 	<script src="/a/js.js"></script>
 <style>
-body { margin: auto; text-align: center; font-family: 'Open Sans', sans-serif; }
+body { margin: auto; text-align: center; font-family: 'Open Sans';}
 img { display: inline-block; padding: 10px; max-width: 95% }
 a { padding-top: 10px; display: block; text-decoration: none; color:#fff}
 a::after { content: " →"}
+a.about { display: inline; position: absolute; right: 10px; top: 10px; }
+a.about::after { content: none; }
 section img { width: initial; max-width: 95%; max-height: 100% }
 section { width: 100%; background: #222}
 header {padding: 1em; background: #131B2A; box-shadow: 0px 2px 6px gray; }
 input {padding: 0.5em; border: none; font-family: 'Open Sans', sans-serif;}
 select {padding: 0.4em; border: none; font-family: 'Open Sans', sans-serif;}
 h1 { padding: 1em }
+#jumbotron { height: 90vh; background-image: url("/a/bg.png"); background-repeat: no-repeat; background-position: bottom center; background-size: contain;}
 </style>
 </html>

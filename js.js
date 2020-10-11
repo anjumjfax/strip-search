@@ -63,18 +63,18 @@ function desc(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); }
 
 function asc(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); }
 
-function rel(a, b){ return a.rel > b.rel ? -1 : (a.rel < b.rel ? -1 : 0); }
+function rel(a, b){ return a.rel > b.rel ? -1 : (a.rel < b.rel ? 1 : 0); }
 
 function sort() {
 	switch(combo.value) {
 		case '1':
-			Results.strips.sort(desc);
+			Results.strips = Results.strips.sort(desc);
 			break;
 		case '-1':
-			Results.strips.sort(asc);
+			Results.strips = Results.strips.sort(asc);
 			break;
 		case '0':
-			Results.strips.sort(rel);
+			Results.strips = Results.strips.sort(rel);
 			break;
 	}
 }
@@ -92,10 +92,12 @@ function load() {
 		return;
 	}
 	var max = Results.strips.length;
-	for (var i = Loaded; i < Loaded+16 && i < max ; i++) {
-		var pic = img(Results.strips[i].date);
-		ResultsPage.appendChild(pic);
-	}
+	do {
+		for (var i = Loaded; i < Loaded+32 && i < max ; i++) {
+			var pic = img(Results.strips[i].date);
+			ResultsPage.appendChild(pic);
+		}
+	} while (false);
 	Loaded = i;
 }
 

@@ -33,6 +33,7 @@ import (
 	"time"
 	"strconv"
 	"strings"
+	"regexp"
 )
 
 var dba *sql.DB
@@ -67,15 +68,32 @@ func search(query string, order int) results {
 	}
 
 	var rows *sql.Rows
+	var err error
+
+	reg, regerr := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(regerr)
+	}
+
+	query = reg.ReplaceAllString(query, " ")
 
 	if order == 0 {
-	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by rank", query)
+	rows, err = dba.Query("select date, rank from txscripts where body match ? order by rank", query)
+	if err != nil {
+		log.Println(err)
+	}
 	}
 	if order > 0 {
-	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by date desc", query)
+	rows, err = dba.Query("select date, rank from txscripts where body match ? order by date desc", query)
+	if err != nil {
+		log.Println(err)
+	}
 	}
 	if order < 0 {
-	rows, _ = dba.Query("select date, rank from txscripts where body match ? order by date asc", query)
+	rows, err = dba.Query("select date, rank from txscripts where body match ? order by date asc", query)
+	if err != nil {
+		log.Println(err)
+	}
 	}
 
 	for rows.Next() {
@@ -212,9 +230,13 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 	mime := "image/jpeg"
 	filename := r.URL.Path[len("/a/"):]
 	switch filename {
+	case "about.html":
+		mime = "text/html"
 	case "js.js":
 		mime = "application/javascript"
 	case "favicon.png":
+		mime = "image/png"
+	case "bg.png":
 		mime = "image/png"
 	}
 	fp, err := ioutil.ReadFile(filename)
