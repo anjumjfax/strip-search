@@ -10,13 +10,18 @@
 		      content="peanuts search engine,search, comics"/>
 		<meta name="google-site-verification"
 		      content="497dS7PuMOAE4zxPA0G77lkr-3wvR6HOR7yeInys-4o" />
+		<meta property="og:title" content="Peanuts, Snoopy, Charlie Brown, comic search engine" />
+		<meta property="og:description" content="A search tool for the Peanuts comic strip" />
+		<meta property="og:image" content="https://peanuts-search.com/r?q={{.}}" />
+        <meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content="https://peanuts-search.com/r?q={{.}}" />
 		<link rel="icon" type="image/png" href="/a/favicon.png">
 		<title>Peanuts, Snoopy, Charlie Brown, comic search engine</title>
 	</head>
 	<body id="h" class="big"> 
 		<header>
 			<form action="/html" method="get">
-		<a href="/a/about.html" rel="jslicense" class="about">?</a>
+		<a href="/a/about.html" rel="jslicense" class="about">Help</a>
 		<input type="text"
 			   name="q"
 			   id="query"
@@ -40,6 +45,7 @@
 		<div id="jumbotron">
 			<h1>Start typing to search for up to 17,987 Peanuts strips!</h1>
 		</div>
+		<button id="topButton" title="Go to top">Top</button>
 	</body>
 	<script src="/a/js.js"></script>
 <style>
@@ -47,7 +53,7 @@ body { margin: auto; text-align: center; font-family: 'Open Sans';}
 img { display: inline-block; padding: 10px; max-width: 95% }
 a { padding-top: 10px; display: block; text-decoration: none; color:#fff}
 a::after { content: " →"}
-a.about { display: inline; position: absolute; right: 10px; top: 10px; }
+a.about { display: inline; position: absolute; right: 20px; top: 10px; }
 a.about::after { content: none; }
 section img { width: initial; max-width: 95%; max-height: 100% }
 section { width: 100%; background: #222}
@@ -56,5 +62,20 @@ input {padding: 0.5em; border: none; font-family: 'Open Sans', sans-serif;}
 select {padding: 0.4em; border: none; font-family: 'Open Sans', sans-serif;}
 h1 { padding: 1em }
 #jumbotron { height: 90vh; background-image: url("/a/bg.png"); background-repeat: no-repeat; background-position: bottom center; background-size: contain;}
+#topButton { 
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  background-color: red;
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 4px;
+}
 </style>
 </html>

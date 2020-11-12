@@ -4,6 +4,7 @@ var ResultsPage = document.getElementById("results");
 var textInput = document.getElementById("query");
 var form = document.getElementsByTagName("form");
 var combo = document.getElementById("order");
+var topButton = document.getElementById("topButton");
 var Months = {};
 Months["01"] = "January"
 Months["02"] = "February"
@@ -153,6 +154,11 @@ document.addEventListener('scroll', function(e)
 {
 	if((window.innerHeight + window.pageYOffset + 10)
 	>= document.body.offsetHeight){load();}
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+      topButton.style.display = "block";
+    } else {
+      topButton.style.display = "none";
+    }
 });
 
 var timeout = null;
@@ -180,4 +186,9 @@ combo.onchange = function(e) {
 
 form[0].onsubmit = function(e) {
 	e.preventDefault();
+}
+
+topButton.onclick = function(e) {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
 }

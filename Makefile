@@ -13,7 +13,7 @@ clean:
 	rm search
 
 deploy:
-	scp js.js index.html results.html bg.png search.ahmedaj2:/home/search/search
+	scp js.js index.html about.html results.html bg.png search.ahmedaj2:/home/search/search
 
 test:
 	go test --tags "fts5"

@@ -107,6 +107,44 @@ func search(query string, order int) results {
 	return results
 }
 
+func oneSearch(query string) string {
+	if len(query) < 2 {
+		return ""
+	}
+	var date string
+	err := dba.QueryRow("select date from txscripts where body match ? order by rank limit 1", query).Scan(&date)
+	if err != nil {
+		log.Println(err)
+	}
+	return date
+}
+
+func getOneSearchQuery(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	if q["q"] == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	query := q["q"][0]
+	filename := oneSearch(query)
+
+	if filename == "" {
+		filename = "favicon.png"
+	} else {
+		filename = "i/"+strings.Replace(filename, "-", "", 3)
+	}
+
+	fp, err := ioutil.ReadFile(filename)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Write(fp)
+}
+
 func postSearchQuery(w http.ResponseWriter, r *http.Request) {
 	b, _ := ioutil.ReadAll(r.Body)
 	start := time.Now()
@@ -262,6 +300,7 @@ func routes() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/q", postSearchQuery)
 	mux.HandleFunc("/html", getSearchQueryHTML)
+	mux.HandleFunc("/r", getOneSearchQuery)
 	mux.HandleFunc("/i/", getImage)
 	mux.HandleFunc("/I/", getImageBig)
 	mux.HandleFunc("/a/", getAsset)
