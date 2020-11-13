@@ -57,6 +57,7 @@ type page struct {
 	No string
 	Off int
 	Q string
+	Ord string
 }
 
 func search(query string, order int) results {
@@ -160,25 +161,25 @@ func postSearchQuery(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func pageNos(length int, offset int, q string) []page {
+func pageNos(length int, offset int, q string, ord string) []page {
 	pages := make([]page, 0)
 	if offset - 96 >= 0 {
-		pages = append(pages, page {"-96", offset -96, q})
+		pages = append(pages, page {"-96", offset -96, q, ord})
 	}
 	if offset - 48 >= 0 {
-		pages = append(pages, page {"-48", offset -48, q})
+		pages = append(pages, page {"-48", offset -48, q, ord})
 	}
 	if offset - 24 >= 0 {
-		pages = append(pages, page {"-24", offset-24, q})
+		pages = append(pages, page {"-24", offset-24, q, ord})
 	}
 	if offset + 24 < length {
-		pages = append(pages, page {"+24", offset + 24, q})
+		pages = append(pages, page {"+24", offset + 24, q, ord})
 	}
 	if offset + 48 < length {
-		pages = append(pages, page {"+48", offset + 48, q})
+		pages = append(pages, page {"+48", offset + 48, q, ord})
 	}
 	if offset + 96 < length {
-		pages = append(pages, page {"+96", offset + 96, q})
+		pages = append(pages, page {"+96", offset + 96, q, ord})
 	}
 	return pages
 }
@@ -221,7 +222,7 @@ func getSearchQueryHTML(w http.ResponseWriter, r *http.Request) {
 	if no < upper {
 		upper = no
 	}
-	res := htmlResults{ searchResults.Strips[offset:upper], pageNos(no, offset, b) }
+	res := htmlResults{ searchResults.Strips[offset:upper], pageNos(no, offset, b, strconv.Itoa(order)) }
 	for n, i := range res.Strips {
 		res.Strips[n].Date = strings.Replace(i.Date, "-", "", 3)
 	}

@@ -10,11 +10,15 @@
 		      content="peanuts search engine,search, comics"/>
 		<meta name="google-site-verification"
 		      content="497dS7PuMOAE4zxPA0G77lkr-3wvR6HOR7yeInys-4o" />
-		<title>Peanuts strip search (beta)</title>
+		<meta property="og:title" content="Peanuts, Snoopy, Charlie Brown, comic search engine" />
+        <meta name="twitter:card" content="summary_large_image" />
+		<link rel="icon" type="image/png" href="/a/favicon.png">
+		<title>Peanuts, Snoopy, Charlie Brown, comic search engine</title>
 	</head>
 	<body id="h" class="big"> 
 		<header>
 		<form action="/html" method="get">
+		<a href="/a/about.html" rel="jslicense" class="about">Help</a>
 		<input type="text"
 		       name="q"
 		       id="query"
@@ -23,8 +27,8 @@
 		       autofocus
 		       />
 		<select id="order" name="order">
-			<option value="-1" selected>Most relevant first</option>
-			<option value="0">Earliest first</option>
+			<option value="0" selected>Most relevant first</option>
+			<option value="-1">Earliest first</option>
 			<option value="1">Latest first</option>
 		</select>
 		<input type="submit"/>
@@ -37,13 +41,14 @@
 		</div>
 		<p>
 			{{range .Pages}}
-			<a href="/html?q={{.Q}}&offset={{.Off}}">[{{.No}}]</a>
+			<a href="/html?q={{.Q}}&offset={{.Off}}&?order={{.Ord}}">[{{.No}}]</a>
 			{{end}}
 		</p>
 	</body>
 <style>
 body { margin: auto; text-align: center; font-family: sans-serif; }
 img { display: inline-block; padding: 10px; max-width: 95% }
+a.about { padding-top: 10px; display: block; text-decoration: none; color:#fff; display: inline; position: absolute; right: 20px; top: 10px; }
 header {padding: 1em; background: #131B2A; box-shadow: 0px 2px 6px gray; }
 input {padding: 0.5em; border: none; font-family: 'Open Sans', sans-serif;}
 select {padding: 0.4em; border-style: none; font-family: 'Open Sans', sans-serif;}
