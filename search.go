@@ -288,6 +288,17 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 	w.Write(fp)
 }
 
+func getGoogle(w http.ResponseWriter, r *http.Request) {
+	fp, err := ioutil.ReadFile("google99ab2ca2e675d9dd.html")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write(fp)
+}
+
 func secure() bool {
 	_, certErr := os.Stat("certs")
 	secure := true
@@ -306,6 +317,7 @@ func routes() *http.ServeMux {
 	mux.HandleFunc("/I/", getImageBig)
 	mux.HandleFunc("/a/", getAsset)
 	mux.HandleFunc("/", getIndex)
+	mux.HandleFunc("/google99ab2ca2e675d9dd.html", getGoogle)
 	return mux
 }
 

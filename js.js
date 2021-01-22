@@ -64,7 +64,7 @@ function desc(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); }
 
 function asc(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); }
 
-function rel(a, b){ return a.rel > b.rel ? -1 : (a.rel < b.rel ? 1 : 0); }
+function rel(a, b){ return a.rel < b.rel ? -1 : (a.rel > b.rel ? 1 : 0); }
 
 function sort() {
 	switch(combo.value) {
