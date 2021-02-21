@@ -254,14 +254,14 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getImageBig(w http.ResponseWriter, r *http.Request) {
-	img := r.URL.Path[len("/i/"):]
-	fp, err := ioutil.ReadFile("I/" + img)
+	img := r.URL.Path[len("/I/"):]
+	fp, err := ioutil.ReadFile("pngs/" + img + ".png")
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/gif")
+	w.Header().Set("Content-Type", "image/png")
 	w.Write(fp)
 }
 
